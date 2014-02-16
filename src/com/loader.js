@@ -39,7 +39,11 @@ define(function(require, exports, module){
 
 		_complete : function(img){
 			this._loadedNum++;
-			this.fire('complete', this._loadedNum, img);
+			if(this._loadedNum == this._assetsNum) {
+				this.fire('complete');
+			} else {
+				this.fire('load', this._loadedNum, img)
+			}
 		}
 
 	});

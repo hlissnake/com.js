@@ -37,7 +37,7 @@ define(function(require, exports, module){
 			return this;
 		},
 
-		stop : function(){
+		pause : function(){
 			this._run = false;
 
 			return this;
