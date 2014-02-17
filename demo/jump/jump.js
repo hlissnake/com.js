@@ -118,6 +118,14 @@ define(function(require, exports, module){
 
 			var sky, runner, rock, ground, blood, startBtn, gameover, hill;
 
+
+var game = Game.createScene(canvas);
+game.init(function(){
+
+})
+game.init();
+
+
 			var scene = Game.createScene(canvas, {
 
 				assets : assetsMap,

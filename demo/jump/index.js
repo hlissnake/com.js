@@ -19,7 +19,7 @@ define(function(require, exports, module){
 
 	var GRAVITY_FORCE = 9.81,
 		JUMP_HEIGHT_METERS = 2,
-		pixPerMeter = 50,
+		pixPerMeter = 60,
 		moveSensitivity = 2000,
 		jumpVelocityPerSecond = 60 / 1, 
 		jumpHeightPix = 60;
@@ -42,7 +42,11 @@ define(function(require, exports, module){
 		score : 0,
 
 		calculateAccelerate : function(accelerationX, dt, com){
-            var translateX = accelerationX * dt * dt * moveSensitivity;
+            var velocityIncrearse = accelerationX * dt
+            // ,	velocityX = velocityIncrearse + com.velocityX
+            ,	translateX = velocityIncrearse * dt * moveSensitivity / 5
+            ;
+            // com.velocityX = velocityX;
             com.x += translateX;
             if(com.x < 0) {
             	com.x = 0;
@@ -109,6 +113,7 @@ define(function(require, exports, module){
 				runner.y = Game.stage.height - 60 - 90;
 				runner.die = false;
 				runner.play('run');
+				runner.flash = 2;
 				runner.visible = true;
 				rock.x = -rock.width;
 			} else {;
@@ -117,6 +122,7 @@ define(function(require, exports, module){
 					y : Game.stage.height - 60 - rockRadius,
 					width : rockRadius,
 					height : rockRadius,
+					zIndex : 300,
 					backgroundImage : Game.loader.get('ground'),
 					// behaviors : [ jumpBehavior ],
 					shape : Com.Shape.Circle,
@@ -248,6 +254,7 @@ define(function(require, exports, module){
 						y : canvas.height - 60,
 						width : canvas.width,
 						height : 60,
+						zIndex : 202,
 						backgroundImage : loader.get('ground'),
 						imagePositionX : 0,
 						backgroundRepeatX : true,
@@ -260,6 +267,7 @@ define(function(require, exports, module){
 						y : canvas.height - 60 - 118,
 						width : 564,
 						height : 118,
+						zIndex : 20,
 						backgroundImage : loader.get('hill'),
 						shape : Com.Shape.Rect,
 						painter : Com.Painter.Bitmap
@@ -357,7 +365,8 @@ define(function(require, exports, module){
 					y : Game.stage.height - 60 - 90,
 					width : 50,
 					height : 90,
-					zIndex : 10,
+					zIndex : 400,
+					// velocityX : 0,
 					shape : Com.Shape.Rect,
 					painter : spriteSheetPainter,
 					loop : true,
@@ -372,15 +381,17 @@ define(function(require, exports, module){
 				stage.append(startBtn);
 				stage.append(over);
 				stage.append(score);
+				createArrow();
 
 				function createArrow(){
-					for( var i = 0; i < 2; i++) {
+					var maxArrows = Math.ceil(stage.width / 320) * 2;
+					for( var i = 0; i < maxArrows; i++) {
 						var arrow = new Com({
-							id : 'arrow',
 							x : i * stage.width,
 							y : -58,
 							width : 13,
 							height : 58,
+							zIndex : 200,
 							visible : false,
 							velocityY : 0,
 							backgroundImage : loader.get('arrow'),
@@ -391,7 +402,6 @@ define(function(require, exports, module){
 						arrows.push(arrow);
 					}
 				}
-				createArrow();
 
 				stage.delegate('touchstart', '',  function(e){
 					if(e.targetCom.id == 'start') {
@@ -444,9 +454,13 @@ define(function(require, exports, module){
 
 				var AccelerationX = 0
 				;
-				window.addEventListener('devicemotion', function(ev){
+				// window.addEventListener('devicemotion', function(ev){
+				// 	// var acceleration = ev.accelerationIncludingGravity
+    //                 AccelerationX = ev.accelerationIncludingGravity.x;
+				// });
+				window.addEventListener('deviceorientation', function(ev){
 					// var acceleration = ev.accelerationIncludingGravity
-                    AccelerationX = ev.accelerationIncludingGravity.x;
+                    AccelerationX = ev.gamma;
 				});
 
 				var FPS_TOTAL = 0;
@@ -485,7 +499,7 @@ define(function(require, exports, module){
 							renderArrow(arrows[i], dt);
 						}
 
-						if(Game.hitTestArrow( runner, arrows ) || Game.hitTestCircle(runner, rock)) {
+						if( !runner.flash && (Game.hitTestArrow( runner, arrows ) || Game.hitTestCircle(runner, rock))) {
 							console.log('die');
 							runner.die = true;
 							blood.x = runner.x - 7;

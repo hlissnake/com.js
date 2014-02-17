@@ -1,146 +1,381 @@
-/*global module:false*/
+// Generated on 2013-10-14 using generator-website 0.1.0
+'use strict';
+var LIVERELOAD_PORT = 35728;
+var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
+//支持post start
+var fs = require('fs');
+var restSupport = require('connect-rest');
+restSupport.post({
+    path: '/**/*.json'
+}, function(req, content, next) {
+    fs.readFile('.' + req.headers.originalUrl, 'utf8', function(err, result) {
+        var json = JSON.parse(result);
+        next(null, json);
+    })
+});
+//支持post end
+var mountFolder = function (connect, dir) {
+    return connect.static(require('path').resolve(dir));
+};
+
+
+// ATC 模板预编译工具
+var TmodJS = require('tmodjs');
+
+// # Globbing
+// for performance reasons we're only matching one level down:
+// 'test/spec/{,*/}*.js'
+// use this if you want to recursively match all subfolders:
+// 'test/spec/**/*.js'
+
 module.exports = function (grunt) {
+    // load all grunt tasks
+    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-    grunt.task.registerMultiTask('removeKissy', 'remove Kissy.', function() {
-        //grunt.log.writeln(this.target + ': ' + this.data);
+    // page that you want to build.
+    var pageName = grunt.option('page') || grunt.file.readJSON('p.json').page;
 
-        var start = 
-        'var KISSY = {};\
-        KISSY.mods = {};\
-        KISSY.add = function (name, fn, cfg) {\
-            var requires = [];\
-            cfg && cfg.requires && cfg.requires.forEach(function (s) {\
-                if (/\\/$/.test(s)) s += "index";\
-                requires.push("mods[\'"+s+"\']");\
-            });\
-\
-            if (/\\/$/.test(name)) name += "index";\
-            KISSY.mods[name] = {\
-                name: name,\
-                fn: fn,\
-                requires: requires\
-            }\
-        };'
-        ;
-
-        var end = 
-        'module.exports = KISSY;';
-
-        var pre = 
-        '\n;(function () {\n\
-    \n\
-    var mods = {},\n\
-        KISSY;\n';
-
-        var last = '\n})();'
-
-
-        this.data.forEach(function (file) {
-            var code = grunt.file.read(file.src);
-            // console.log(code)
-            grunt.file.write(file.dest, start + code + end);
-            var KISSY = require(file.dest);
-            var codeArr = [];
-            for (var m in KISSY.mods) {
-                var mod = KISSY.mods[m];
-                var args = ['KISSY'].concat(mod['requires']).join(',');
-                var mCode = 'mods[\''+m+'\'] = ('+mod['fn'].toString()+')('+args+');';
-                codeArr.push(mCode);
-            }
-            pre = 'var '+file.exportsName+';\n' + pre;
-            last = '\n' + file.exportsName + ' = mods[\'' + file.exportsKey + '\']; \n' + last;
-            grunt.file.write(file.dest, pre + codeArr.join('\n') + last);
-
-        })
-    });
-
-
-    // Project configuration.
     grunt.initConfig({
-        // Metadata.
-        pkg: grunt.file.readJSON('package.json'),
-        version: '1.0.0',
-        banner: '/*<%= grunt.template.today("yyyy-mm-dd") %>-<%= pkg.author%>*/',
-        // Task configuration.
 
-        /**
-         * 进行KISSY 打包
-         * @link https://github.com/daxingplay/grunt-kmc
-         */
-        kmc: {
-            options: {
-                packages: [
-                    {
-                        name: 'cec',
-                        path: 'src'
-                    }
-                ]
+        page : pageName,
+
+        watch: {
+            template: {
+                files: ['js/pp/tpl/**/*.html'],
+                tasks: ['tpl']
             },
-            page: {
+            compass: {
                 files: [
-                    {   
-                        expand: true,
-                        cwd: 'src/cec',
-                        src: ['*.js', '*/index.js' ],
-                        dest: 'build/cec/'
-                    }
+                    'css/{,*/}*.css',
+                    'css/{,*/}*.{scss,sass}'
+                ],
+                tasks: ['compass:server']
+            },
+            livereload: {
+                options: {
+                    livereload: LIVERELOAD_PORT
+                },
+                files: [
+                    '{.tmp,./}/css/{,*/}*.css',
+                    //'{.tmp,./}/js/{,*/}*.js',
+                    'js/**/*.js',
+                    'image/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
+                    //'views/{,*/}*.vm',
+                    //'json/**/*.json'
                 ]
             }
         },
-
-        removeKissy: {
-            files: [
-                {
-                    exportsKey: 'cec/cec',
-                    exportsName: 'CEC',
-                    src: './build/cec/cec.js',
-                    dest: './build/cec/cec-nokissy.js'
+        connect: {
+            options: {
+                port: 9877,
+                // change this to '0.0.0.0' to access the server from outside
+                hostname: '0.0.0.0'
+            },
+            livereload: {
+                options: {
+                    middleware: function (connect) {
+                        return [
+                            lrSnippet,
+                            mountFolder(connect, '.tmp'),
+                            mountFolder(connect, '.'),
+                            restSupport.rester({'context': '/json'})//支持post
+                        ];
+                    }
                 }
+            },
+            dist: {
+                options: {
+                    middleware: function (connect) {
+                        return [
+                            mountFolder(connect, 'build')
+                        ];
+                    }
+                }
+            }
+        },
+        open: {
+            server: {
+                path: 'http://localhost:<%= connect.options.port %>'
+            }
+        },
+        clean: {
+            dist: {
+                files: [
+                    {
+                        dot: true,
+                        src: [
+                            '.tmp',
+                            'build/*',
+                            '!build/.git*'
+                        ]
+                    }
+                ]
+            },
+            server: '.tmp'
+        },
+        jshint: {
+            options: {
+                jshintrc: '.jshintrc'
+            },
+            all: [
+                'Gruntfile.js',
+                'js/{,*/}*.js'
             ]
+        },
+        compass: {
+            options: {
+                sassDir: 'css',
+                cssDir: '.tmp/css',
+                generatedImagesDir: '.tmp/image/sprites',
+                imagesDir: 'image',
+                javascriptsDir: 'js',
+                fontsDir: 'css/fonts',
+                //importPath: 'components',
+                httpImagesPath: '/image',
+                httpGeneratedImagesPath: '/image/sprites',
+                relativeAssets: true,
+                outputStyle: 'compressed',
+                noLineComments: true
+            },
+            dist: {},
+            server: {
+                options: {
+                    debugInfo: true
+                }
+            }
+        },
+        // not used since Uglify task does concat,
+        // but still available if needed
+        /*concat: {
+            dist: {}
+        },*/
+        // not enabled since usemin task does concat and uglify
+        // check index.html to edit your build targets
+        // enable this task if you prefer defining your build targets here
+        /*uglify: {
+            dist: {}
+        },*/
+        uglify: {
+            files: {
+                cwd: 'build',
+                src: ['js/**/*.js', '!ueditor/'],
+                dest: 'build/',
+                expand: true,
+                flatten: false
+            }
+        },
+        transport: {
+            options : {
+                paths : [
+                    'js/pp'
+                ],
+                debug: false,
+                alias : {
+                    'api/bridge/launch': 'api/bridge/launch',
+                    'jQuery': 'lib/jquery-1.9.1.min',
+                    'tmpl': 'lib/jquery.tmpl',
+                    'jQCookie': 'lib/jquery.cookie.min',
+                    'underscore': 'lib/underscore-1.5.2.min',
+                    'blocksit': 'lib/blocksit/blocksit.min',
+                    'fancybox': 'lib/jquery.fancybox.pack',
+                    'uploadify': 'lib/jquery.uploadify',
+                    'reminderBar': 'module/reminder-bar',
+                    'EC': 'module/event-center',
+                    'Backbone': 'lib/Backbone.js',
+                    'common': 'page/common.js'
+                }
+            },
+            dist : {
+                files : [
+                    {
+                        cwd : 'js/pp',
+                        expand : true,
+                        src: ['module/**/*.js', 'lib/**/*.js', 'page/**/*.js', 'tpl/**/*.js', '!ueditor/'],
+                        dest: 'build/js/pp'
+                    }
+                ]
+            }
         },
 
         concat: {
-            ra: {
-                src: [
-                    './build/cec/cec-nokissy.js', 
-                    './src/cec/raphael/raphael.1.5.2.js',
-                    './src/cec/raphael/cec._.js', 
-                    './src/cec/raphael/cec.cobject.js',
-                    './src/cec/raphael/cec.sprite.js',
-                    './src/cec/raphael/cec.sprite.anim.js',
-                    './src/cec/raphael/cec.sprite.path.js'
-                ],
-                dest: './build/cec/cec.ra.js'
-            },
-            post: {
-                src: [
-                    './build/cec/cec-nokissy.js', 
-                    './src/cec/raphael/raphael.1.5.2.js',
-                    './src/cec/raphael/cec._.js', 
-                    './src/cec/raphael/cec.cobject.js',
-                    './src/cec/raphael/cec.sprite.js',
-                    './src/cec/raphael/cec.sprite.anim.js',
-                    './src/cec/raphael/cec.sprite.path.js'
-                ],
-                dest: '../post-ninja/source/scripts/lib/cec.ra.js'
+            page: {
+                options: {
+                    include: 'relative'
+                },
+                files : [
+                    {
+                        //src : ['<%= srcBase %>/<%= pageBase %>/<%= page %>/mods/*.js', '<%= srcBase %>/<%= pageBase %>/<%= page %>/index.js'],
+                        expand : true,
+                        cwd : 'build/js/pp/',
+                        src : 'page/<%= page %>/index.js',
+                        dest : 'build/js/pp/'
+                    }
+                ]
             }
-        }
+        },
 
-        // watch: {
-        //     less: {
-        //         files: ['./src/mdh5/assets/less/*.less'],
-        //         tasks: ['less:tnl']
-        //     }
-        // },
-        
+        rev: {
+            dist: {
+                files: {
+                    src: [
+                        'build/js/{,*/}*.js',
+                        'build/css/{,*/}*.css',
+                        'build/image/{,*/}*.{png,jpg,jpeg,gif,webp}',
+                        'build/css/fonts/*'
+                    ]
+                }
+            }
+        },
+        imagemin: {
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'image',
+                        src: '{,*/}*.{png,jpg,jpeg}',
+                        dest: 'build/image'
+                    }
+                ]
+            }
+        },
+        svgmin: {
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'image',
+                        src: '{,*/}*.svg',
+                        dest: 'build/image'
+                    }
+                ]
+            }
+        },
+        cssmin: {
+            dist: {
+                files: {
+                    'build/css/pp/pstyle.css': [
+                        '.tmp/css/pp/pstyle.css'
+                    ],
+                    'build/css/pubweb.css': [
+                        '.tmp/css/pubweb.css'
+                    ],
+                    'build/css/index.css': [
+                        '.tmp/css/index.css'
+                    ],
+                }
+            }
+        },
+        // Put files not handled in other tasks here
+        copy: {
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        dot: true,
+                        cwd: './',
+                        dest: 'build',
+                        src: [
+                            '*.{ico,txt}',
+                            '.htaccess',
+                            'image/{,*/}*.*',
+                            'css/fonts/*.{eot,svg,ttf,woff}',
+                            //'js/{,*/}*.js',
+                            'js/**/*.*',
+                            '!ueditor/'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: 'js/pp/tpl',
+                        dest: 'build/js/pp/tpl',
+                        src: [
+                            '**/tempalte.js'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: '.tmp/image',
+                        dest: 'build/image',
+                        src: [
+                            'sprites/*'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: '.tmp/css',
+                        dest: 'build/css',
+                        src: [
+                            '**/*.css'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: 'css/iconfont',
+                        dest: 'build/css/iconfont',
+                        src: [
+                            '**/*.*'
+                        ]
+                    }
+                ]
+            }
+        },
+        concurrent: {
+            server: [
+                'compass:server'
+            ],
+            dist: [
+                'compass:dist',
+                'imagemin',
+                'svgmin'
+            ]
+        }
     });
 
-    // These plugins provide necessary tasks.
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-kmc');
+    // TModJS 模板预编译工具Task，编译制定Page路面的 模板文件
+    grunt.registerTask('tpl', function(target){
 
-    // Default task.
-    grunt.registerTask('default', [ 'kmc', 'removeKissy', 'concat:ra', 'concat:post']);
+        // 配置
+        var options = {
+                output: './build',
+                charset: 'utf-8',
+                debug: false // 此字段不会保存在配置中
+            }
+        ,   path = './js/pp/tpl/' + pageName
+        ;
+
+        // 初始化 TmodJS
+        // path {String}    模板目录
+        // options {Object} 选项
+        TmodJS.init(path, options);
+
+        // 监听编译过程的事件
+        // 支持的事件有：compile、change、load、compileError、combo
+        //TmodJS.on('compile', function (data) {console.log(data)});
+
+        // 监控模板修改
+        // modJS.watch();
+        // 编译模板
+        // file {String} 参数可选，无则编译整个模板目录，否则编译指定的模板文件
+        // recursion {Boolean} 若为 false 则不编译依赖的模板
+        TmodJS.compile();//file, recursion);
+
+        // 获取用户配置
+        //TmodJS.getUserConfig();
+
+        // 保存用户设置到模板目录 package.json 文件中
+        TmodJS.saveUserConfig();
+
+    })
+
+    grunt.registerTask('build', [
+        'concat',
+        'copy',
+        'transport',
+        'uglify'
+    ]);
+
+    grunt.registerTask('default', [
+        'jshint',
+        'build'
+    ]);
 };

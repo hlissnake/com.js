@@ -51,6 +51,9 @@ define(function(require, exports, module){
 					this.backgroundImageWidth = options.backgroundImage.width;
 					this.backgroundImageHeight = options.backgroundImage.height;
 				}
+				if(options.flash){
+					this._flashLoop = 0;
+				}
 			}
 		},
 
@@ -94,8 +97,28 @@ define(function(require, exports, module){
 			this._createPath(context);
 			context.closePath();
 
-			this._draw(dt, context);
-			this._renderChildren(dt, context);
+			if(this.flash) {
+				if(this._flashLoop == undefined) {
+					this._flashLoop = 0;
+					this._flashTime = 0;
+				}
+				if(this._flashTime < this.flash) {
+					if( this._flashLoop < 1) {
+						this._flashLoop++;
+					} else {
+						this._flashLoop = 0;
+						this._draw(dt, context);
+						this._renderChildren(dt, context);
+					}
+					this._flashTime += dt;
+				} else {
+					this.flash = 0;
+					this._flashTime = 0;
+				}
+			} else {
+				this._draw(dt, context);
+				this._renderChildren(dt, context);
+			}
 
 			context.restore();	
 
