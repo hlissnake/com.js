@@ -106,10 +106,11 @@ define(function(require, exports, module){
 			Game.gamePlaying = true;
 			if(rock) {
 				runner.x = 0;
-				runner.y = canvas.height - 60 - 90;
+				runner.y = Game.stage.height - 60 - 90;
 				runner.die = false;
 				runner.play('run');
 				runner.visible = true;
+				rock.x = -rock.width;
 			} else {;
 				rock = new Com({
 					x : Game.stage.width,
@@ -121,8 +122,8 @@ define(function(require, exports, module){
 					shape : Com.Shape.Circle,
 					painter : Com.Painter.Bitmap
 				}).on('render:before', function(dt){
-					if(this.x < -this.width) {
-						this.x = Game.stage.width + 200 * Math.random();
+					if( this.x < -this.width) {
+						this.x = Game.stage.width + 250 * Math.random();
 						var w = 40 * Math.random() + 30;
 						this.width = w;
 						this.height = w;
@@ -142,6 +143,7 @@ define(function(require, exports, module){
 
 			var Game = this;
 
+			var canvas = document.getElementById('canvas');
 			canvas.width = document.body.getBoundingClientRect().width;
 			canvas.height = document.body.getBoundingClientRect().height;	
 
@@ -153,6 +155,7 @@ define(function(require, exports, module){
 
 			loader.on('complete', function(status, img){
 
+				var loading = document.getElementById('loading');
 				loading.style.display = 'none';
 
 
@@ -264,7 +267,7 @@ define(function(require, exports, module){
 
 				,	startBtn = new Com({
 						id : 'start',
-						x : canvas.width / 2 - 110 / 2,
+						x : stage.width / 2 - 110 / 2,
 						y : 140,
 						width : 110,
 						height : 60,
@@ -275,11 +278,12 @@ define(function(require, exports, module){
 
 				,	over = new Com({
 						id : 'gameover',
-						x : canvas.width / 2 - 198 / 2,
+						x : stage.width / 2 - 198 / 2,
 						y : - 50,
 						width : 198,
 						height : 50,
 						visible : false,
+						zIndex : 199,
 						backgroundImage : loader.get('over'),
 						shape : Com.Shape.Rect,
 						painter : Com.Painter.Bitmap
@@ -288,7 +292,7 @@ define(function(require, exports, module){
 				,	score = new Com({
 						id : 'score',
 						x : stage.width / 2,
-						y : stage.height / 2 - 25,
+						y : 140 + 100,
 						width : 60,
 						height : 50,
 						text : 0,
@@ -475,7 +479,7 @@ define(function(require, exports, module){
 					TWEEN.update();
 
 					if(Game.gamePlaying) {
-						Game.calculateAccelerate(AccelerationX, dt, runner);
+						runner.die || Game.calculateAccelerate(AccelerationX, dt, runner);
 
 						for(var i = 0; i < arrows.length; i++) {
 							renderArrow(arrows[i], dt);
@@ -501,13 +505,13 @@ define(function(require, exports, module){
 					stage.clear();
 					stage.render(dt);
 
-					if (isAndroid) {
-				    	if(canvas.style.opacity) {
-				    		canvas.style.opacity = '';
-				    	} else {
-				    		canvas.style.opacity = '0.99';
-				    	}
-				    }
+					// if (isAndroid) {
+				 //    	if(canvas.style.opacity) {
+				 //    		canvas.style.opacity = '';
+				 //    	} else {
+				 //    		canvas.style.opacity = '0.99';
+				 //    	}
+				 //    }
 
 					FPS_TOTAL += dt;
 					if(FPS_TOTAL > 1) {

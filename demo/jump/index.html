@@ -49,6 +49,10 @@
 	    margin-top: 150px;
 	}
 	#notice {
+		display: none;
+		position: absolute;
+		left: 0;
+		top: 0;
 		background-color: #444;
 		color: white;
 		width: 100%;
@@ -107,6 +111,18 @@
 		e.preventDefault();
 	})
 
+	var notice = document.getElementById('notice');
+	var loading = document.getElementById('loading');
+	
+	window.addEventListener('orientationchange', function(e){
+		if (window.orientation == 0) {
+			notice.style.display = 'none';
+
+		} else if (window.orientation == 90 || window.orientation == -90) {
+			notice.style.display = 'block';
+		}
+	});
+
 	seajs.config({
 		paths : {
 			com : '../../src/com',
@@ -115,36 +131,13 @@
 	});
 
 	seajs.use(['demo/jump/index'], function(Game){
-
-		var init = true;
-		
-		window.addEventListener('orientationchange', function(e){alert(window.orientaion);
-
-			if (window.orientaion == 0) {
-
-				notice.style.display = 'block';
-
-			} else if (window.orientaion == 90 || window.orientaion == -90) {
-
-				notice.style.display = 'none';
-				if(init) {
-
-					loading.style.display = 'block';
-					init = false;
-
-					Game.init();
-
-				}
-			}
-		});
-
 		notice.style.display = 'none';
 		loading.style.display = 'block';
 		Game.init();
 	});
 
 </script>
-<!-- <script src="http://jsconsole.com/remote.js?6BBC0FC7-1E68-4509-97FE-F4C4C57AD735"></script> -->
+<script src="http://jsconsole.com/remote.js?6BBC0FC7-1E68-4509-97FE-F4C4C57AD735"></script>
 
 </body>
 </html>
