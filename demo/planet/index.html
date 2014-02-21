@@ -141,7 +141,7 @@
 <canvas id="canvas"></canvas>
 <canvas id="buffer" height=100% ></canvas>
 
-<div id="title"> 点击跳跃，倾斜手机逃避追杀吧！</div>	
+<div id="title"> 按住太阳来维持万有引力，行星要逃离咯</div>	
 
 <div id="fps"> </div>	
 
@@ -185,9 +185,9 @@
 		}
 	});
 
-	seajs.use(['demo/jump/index'], function(Game){
+	seajs.use(['demo/planet/index'], function(Game){
 		notice.style.display = 'none';
-		loading.style.display = 'block';
+		loading.style.display = 'none';
 		var gameLoop = Game.init();
 
 		var author = document.getElementById('author')

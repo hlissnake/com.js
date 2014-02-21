@@ -24,17 +24,27 @@ define(function(require, exports, module){
 
 		_loadImag : function(key, url){
 			var me = this
-			,	img = new Image()
+			,	img
 			;
-			img.src = url;
-			if(img.complete) {
-				me._complete(img);
-			} else {
-				img.onload = function(){
-					me._complete(this);
+			img = me._imgMap[key] || new Image();
+			// if(img.complete) {
+				// me._complete(img);
+			// } else {
+			img.onload = function(){
+				me._complete(this);
+			}
+			img.onerror = function(){
+				if(!this.retry) {
+					this.retry = true;
+					this.onload = this.onerror = null;
+					me._loadImag(key, url);
+				} else {
+					me.fire('error', key, url);
 				}
 			}
-			this._imgMap[key] = img;
+			img.src = url;
+			me._imgMap[key] = img;
+			// }
 		},
 
 		_complete : function(img){

@@ -20,7 +20,7 @@ define(function(require, exports, module){
 	var GRAVITY_FORCE = 9.81,
 		JUMP_HEIGHT_METERS = 2,
 		pixPerMeter = 60,
-		moveSensitivity = 2000,
+		moveSensitivity = 10,
 		jumpVelocityPerSecond = 60 / 1, 
 		jumpHeightPix = 60;
 		
@@ -42,18 +42,17 @@ define(function(require, exports, module){
 		score : 0,
 
 		calculateAccelerate : function(accelerationX, dt, com){
-            var velocityIncrearse = accelerationX * dt
+            // var velocityIncrearse = accelerationX * dt
             // ,	velocityX = velocityIncrearse + com.velocityX
-            ,	translateX = velocityIncrearse * dt * moveSensitivity / 5
+            var	translateX = accelerationX * dt * moveSensitivity
             ;
-            // com.velocityX = velocityX;
             com.x += translateX;
             if(com.x < 0) {
             	com.x = 0;
             } else if (com.x > this.stage.width - com.width) {
             	com.x = this.stage.width - com.width;
             }
-            if(Math.abs(translateX) > 1 && !this.Jumping) {
+            if(Math.abs(translateX) > 1 && !com.Jumping) {
             	com.framerate = 0;
             } else {
             	com.framerate = 1;
@@ -108,12 +107,13 @@ define(function(require, exports, module){
 		gameStart : function(){
 			var Game = this;
 			Game.gamePlaying = true;
+			Game.score = 0;
 			if(rock) {
 				runner.x = 0;
 				runner.y = Game.stage.height - 60 - 90;
 				runner.die = false;
 				runner.play('run');
-				runner.flash = 2;
+				// runner.flash = 2;
 				runner.visible = true;
 				rock.x = -rock.width;
 			} else {;
@@ -155,6 +155,7 @@ define(function(require, exports, module){
 
 			var loader = new Loader(assetsMap)
 			,	stage = new Com(canvas)
+			,	timer = new Timer()
 			;
 			Game.stage = stage;
 			Game.loader = loader;
@@ -184,6 +185,10 @@ define(function(require, exports, module){
 						    // .delay( delayTime )
 						    .easing( TWEEN.Easing.Quintic.Out)
 						    .onUpdate( function () {
+						        if(com.die) {
+						        	me.over = true;
+						        	// jump.stop();
+						        }
 						        com.y = this.y;
 						    });
 								
@@ -193,6 +198,10 @@ define(function(require, exports, module){
 						    // .delay( delayTime )
 						    .easing( TWEEN.Easing.Quartic.In)
 						    .onUpdate( function () {
+						        if(com.die) {
+						        	me.over = true;
+						        	// fall.stop();
+						        }
 						        com.y = this.y;
 						        if(com.y == originHeight) {
 						        	me.over = true;
@@ -214,6 +223,7 @@ define(function(require, exports, module){
 						if(!me.over) {
 							return;
 						}
+						com.Jumping = false;
 						com.stop();
 						var	up = new TWEEN.Tween( { y : originHeight } )
 						    .to( { y : originHeight - 30 }, 500 )
@@ -306,6 +316,7 @@ define(function(require, exports, module){
 						text : 0,
 						fillColor : 'white',
 						font : '30px Palatino',
+						visible : false,
 						shape : Com.Shape.Rect,
 						painter : Com.Painter.Text
 					})
@@ -327,7 +338,7 @@ define(function(require, exports, module){
 						width : 50,
 						height : 50,
 						visible : false,
-						framerate : 4,
+						framerate : 3,
 						shape : Com.Shape.Rect,
 						painter : bloodSheetPainter
 					})
@@ -407,12 +418,13 @@ define(function(require, exports, module){
 					if(e.targetCom.id == 'start') {
 						return;
 					}
-					if (runner.die) return;
+					if (runner.die || runner.Jumping) return;
 					runner.framerate = 1;
-					Game.Jumping = true;
+					// runner.setFrameSpeed(30);
+					runner.Jumping = true;
 					runner.play('jump', function(){
 						runner.framerate = 0;
-						Game.Jumping = false;
+						runner.Jumping = false;
 						this.play('run'); //console.log( (+new Date) - start );
 					});
 
@@ -470,10 +482,10 @@ define(function(require, exports, module){
 			    }
 
 
-				new Timer().on('run', function(dt){
+				timer.on('run', function(dt){
 
 					if(ground.imagePositionX >= ground.maxPositionX) {
-						ground.imagePositionX = 0;
+						ground.imagePositionX = ground.imagePositionX - ground.maxPositionX;
 					} else {
 						ground.imagePositionX += grundVelocity * dt;
 					}
@@ -493,13 +505,14 @@ define(function(require, exports, module){
 					TWEEN.update();
 
 					if(Game.gamePlaying) {
+						score.visible = true;
 						runner.die || Game.calculateAccelerate(AccelerationX, dt, runner);
 
 						for(var i = 0; i < arrows.length; i++) {
 							renderArrow(arrows[i], dt);
 						}
 
-						if( !runner.flash && (Game.hitTestArrow( runner, arrows ) || Game.hitTestCircle(runner, rock))) {
+						if( !runner.die && ( Game.hitTestArrow( runner, arrows ) || Game.hitTestCircle( runner, rock ) ) ) {
 							console.log('die');
 							runner.die = true;
 							blood.x = runner.x - 7;
@@ -597,7 +610,6 @@ define(function(require, exports, module){
 					startBtn.visible = true;
 					over.visible = true;
 					Game.gamePlaying = false;
-					Game.score = 0;
 					enableArrow(false);
 
 					new TWEEN.Tween( { y : 0 - over.height } )
@@ -620,8 +632,9 @@ define(function(require, exports, module){
 					    })
 					    .start();
 				}
-
 			});
+
+			return timer;
 	
 		}
 	}

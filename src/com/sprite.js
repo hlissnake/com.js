@@ -15,12 +15,16 @@ define(function(require, exports, module){
 			}
 		},
 
+		setFrameSpeed : function(frameSpeed){
+			this.frameTime = 1 / frameSpeed;
+		},
+
 		_draw : function(dt, ctx){
 			this.supr(dt, ctx);
 			if(this.painter && this._animPlay && !this.isOver) {
-				
-				if(this.frameLoop < this.framerate) {
-					this.frameLoop++;
+				// if( this.frameTime && this.frameLoop <= this.frameTime ) {
+				if( this.frameLoop < this.framerate ) {
+					this.frameLoop++; //+= dt;
 				} else {
 					this.frameLoop = 0;
 					this.isOver = this.painter.advance();

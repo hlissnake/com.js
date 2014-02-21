@@ -21,11 +21,11 @@ define(function(require, exports, module){
 				me._loop();
 			});
 			var dt = (now - lastTime) / 1000;
-			// if dt time is larger than 2 seconds, We can belive this is cause by debug or other operation
+			// if dt time is larger than 2 seconds, We can believe this is cause by debug or other operation
 			if(dt > 2) {
 				dt = 1 / 60;
 			}
-			me.fire('run', (now - lastTime) / 1000)
+			me.fire('run', dt)
 			me.lastTime = now;
 		},
 
