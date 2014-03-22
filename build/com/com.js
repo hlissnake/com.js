@@ -78,28 +78,8 @@ define("com/com", [ "./observer", "./class" ], function(require, exports, module
             context.beginPath();
             this._createPath(context);
             context.closePath();
-            // if(this.flash) {
-            // 	if(this._flashLoop == undefined) {
-            // 		this._flashLoop = 0;
-            // 		this._flashTime = 0;
-            // 	}
-            // 	if(this._flashTime < this.flash) {
-            // 		if( this._flashLoop < 1) {
-            // 			this._flashLoop++;
-            // 		} else {
-            // 			this._flashLoop = 0;
-            // 			this._draw(dt, context);
-            // 			this._renderChildren(dt, context);
-            // 		}
-            // 		this._flashTime += dt;
-            // 	} else {
-            // 		this.flash = 0;
-            // 		this._flashTime = 0;
-            // 	}
-            // } else {
             this._draw(dt, context);
             this._renderChildren(dt, context);
-            // }
             context.restore();
             this.fire("render:after", dt);
         },
@@ -131,6 +111,7 @@ define("com/com", [ "./observer", "./class" ], function(require, exports, module
             }
             context.globalAlpha = this.opacity;
             context.fillStyle = this.fillColor;
+            if (this.compositeOperation) context.globalCompositeOperation = this.compositeOperation;
             if (this.font) {
                 context.font = this.font;
                 context.textAlign = "center";
@@ -155,13 +136,6 @@ define("com/com", [ "./observer", "./class" ], function(require, exports, module
                 context.strokeStyle = "rgba(1,1,1,0.6)";
                 context.lineWidth = 2;
                 context.stroke();
-            }
-            if (this.behaviors.length) {
-                var behavior, behaviors = this.behaviors, len = behaviors.length;
-                for (var i = 0; i < len; i++) {
-                    behavior = behaviors[i];
-                    behavior.execute(this, context, dt);
-                }
             }
         },
         /**

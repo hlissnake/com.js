@@ -1,6 +1,6 @@
 // Generated on 2013-10-14 using generator-website 0.1.0
 'use strict';
-var LIVERELOAD_PORT = 35728;
+var LIVERELOAD_PORT = 35727;
 var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
 //支持post start
 var fs = require('fs');
@@ -58,7 +58,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                port: 9877,
+                port: 9876,
                 // change this to '0.0.0.0' to access the server from outside
                 hostname: '0.0.0.0'
             },

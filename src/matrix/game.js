@@ -1,9 +1,9 @@
 define(function(require, exports, module){
 
 	var Com = require('../src/com/com')
-	,	Timer = require('../src/com/timer')
-	, 	Loader = require('../src/com/loader')
-	,	Observer = require('../src/com/observer')
+	,	Timer = require('../util/timer')
+	, 	Loader = require('../util/loader')
+	,	Observer = require('../util/observer')
 	;
 
 	var Game = Observer.extend({

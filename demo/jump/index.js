@@ -153,6 +153,20 @@ define(function(require, exports, module){
 			canvas.width = document.body.getBoundingClientRect().width;
 			canvas.height = document.body.getBoundingClientRect().height;	
 
+			// rotate the stage
+			// var w = document.body.getBoundingClientRect().width
+			// ,	h = document.body.getBoundingClientRect().height
+			// ;
+			// canvas.style.width = h;
+			// canvas.style.height = w;
+			// canvas.width = h;
+			// canvas.height = w;
+			// var ctx = canvas.getContext('2d');
+			// ctx.translate(w, 0);
+			// ctx.rotate( 90 * Math.PI / 180);
+			// canvas.style.width = w;
+			// canvas.style.height = h;
+
 			var loader = new Loader(assetsMap)
 			,	stage = new Com(canvas)
 			,	timer = new Timer()
