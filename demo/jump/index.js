@@ -1,9 +1,9 @@
 define(function(require, exports, module){
-	var Com = require('com/com')
-	, 	Timer = require('com/timer')
-	, 	Sprite = require('com/sprite')
-	, 	SpriteSheet = require('com/spriteSheet')
-	, 	Loader = require('com/loader')
+	var Com = COM.Com
+	, 	Sprite = COM.Sprite
+	, 	SpriteSheet = COM.SpriteSheet
+	, 	Loader = Matrix.Loader
+	, 	Timer = Matrix.Timer
 	;
 
 	var assetsMap = {

@@ -1,8 +1,12 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Class = require('./class');
+window.Util = window.Util || {};
 
-	var Class = require('./class');
+Util.Observer = (function(Class){
 
-	var Observer = Class({
+	function Observer(){ }
+
+	Class.extend(Observer, {
 
 		on : function(eventType, callback, context){
 			this._events = this._events || {};
@@ -54,4 +58,5 @@ define(function(require, exports, module){
 	});
 
 	return Observer;
-})
+
+})(Util.Class);

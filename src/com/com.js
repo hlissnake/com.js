@@ -1,10 +1,9 @@
-define(function(require, exports, module){
-// MC = window.MC || {};
+// define(function(require, exports, module){
+	// var Observer = require('./observer')
+	// ;
+window.COM = window.COM || {};
 
-// MC.CObject = (function(MC, _){
-
-	var Observer = require('./observer')
-	;
+COM.Com = (function(Class, Observer){
 
 	var _COMEvents = ',touchend,touchmove,touchstart,click,mousemove,'
 	,	_COMCustomEvents = ',tap,pinch,swipe,rotate,hold,'
@@ -14,7 +13,31 @@ define(function(require, exports, module){
 		window['_DEBUG_'] = true;
 	}
 
-	var COMObject = Observer.extend({
+	function COM(options){
+		if(options.getContext) {
+			this.canvas = options;
+			this.context = this.canvas.getContext('2d');
+			this.x = this.y = 0;
+			this.width = this.canvas.width;
+			this.height = this.canvas.height;
+			this.type = 'stage';
+		} else {
+			for (var k in options) {
+				if( options[k] === undefined ) continue;
+				this[k] = options[k];
+			}
+			if(options.backgroundImage) {
+				var img = options.backgroundImage;
+				this.width = options.width ? options.width : img.width;
+				this.height = options.height ? options.height : img.height;
+			}
+			if(options.flash){
+				this._flashLoop = 0;
+			}
+		}
+	}
+
+	Class.extend(COM, Observer, {
 
 		x : 0,
 		y : 0,
@@ -34,29 +57,6 @@ define(function(require, exports, module){
 		behaviors : [],
 		ev_map : {},
 
-		initialize : function(options){
-			if(options.getContext) {
-				this.canvas = options;
-				this.context = this.canvas.getContext('2d');
-				this.x = this.y = 0;
-				this.width = this.canvas.width;
-				this.height = this.canvas.height;
-				this.type = 'stage';
-			} else {
-				for (var k in options) {
-					if( options[k] === undefined ) continue;
-					this[k] = options[k];
-				}
-				if(options.backgroundImage) {
-					this.backgroundImageWidth = options.backgroundImage.width;
-					this.backgroundImageHeight = options.backgroundImage.height;
-				}
-				if(options.flash){
-					this._flashLoop = 0;
-				}
-			}
-		},
-
 		append : function(com){
 			this.children = this.children || [];
 			if(com) {
@@ -68,6 +68,18 @@ define(function(require, exports, module){
 				this.children.sort(function(a, b){
 					return a.zIndex - b.zIndex;
 				});
+			}
+		},
+
+		remove : function(com){
+			if(this.children) {
+				var children = this.children;
+				for(var i = 0, len = this.children.length; i < len ; i++ ) {
+					if(children[i] === com) {
+						this.children.splice(i, 1);
+						break;
+					}
+				}
 			}
 		},
 
@@ -140,16 +152,26 @@ define(function(require, exports, module){
 				}
 				context.translate( -translateX, -translateY);
 			}
-			context.globalAlpha = this.opacity;
-			context.fillStyle = this.fillColor;
-			if(this.compositeOperation)
-				context.globalCompositeOperation = this.compositeOperation;
-			if (this.font) {
+			if(this.opacity) 
+				context.globalAlpha = this.opacity;
+
+			if(this.fillColor) 
+				context.fillStyle = this.fillColor;
+
+			if(this.graphicFilter)
+				context.globalCompositeOperation = this.graphicFilter;
+
+			if(this.font) 
 				context.font = this.font;
-				context.textAlign = 'center';
-			}
-			if (this.strokeColor) context.strokeStyle = this.strokeColor;
-			if (this.lineWidth) context.lineWidth = this.lineWidth;
+
+			if(this.fontAlign)
+				context.textAlign = this.fontAlign;
+
+			if(this.strokeColor) 
+				context.strokeStyle = this.strokeColor;
+
+			if(this.lineWidth) 
+				context.lineWidth = this.lineWidth;
 		},
 
 		_createPath : function(context){
@@ -188,7 +210,7 @@ define(function(require, exports, module){
 			} else if ( _COMCustomEvents.indexOf(',' + ev + ',') > -1) {
 
 			} else {
-				me.supr(ev, callback);
+				COM._super.prototype.on.call(this, ev, callback);
 			}
 			return me;
 		},
@@ -324,7 +346,7 @@ define(function(require, exports, module){
 
 	});
 
-	COMObject.Shape = {
+	COM.Shape = {
 
 		Rect : {				
 			draw : function(com, ctx){
@@ -344,7 +366,7 @@ define(function(require, exports, module){
 		}
 	}
 
-	COMObject.Painter = {
+	COM.Painter = {
 		Text : {
 			draw : function(com, ctx, dt){
 				ctx.fillText(com.text, com.x, com.y);
@@ -355,8 +377,8 @@ define(function(require, exports, module){
 			draw : function(com, ctx, dt){
 				var img = com.backgroundImage;
 				if( com.backgroundRepeatX ) {
-					var w = com.backgroundImageWidth
-					,	h = com.backgroundImageHeight
+					var w = img.width
+					,	h = img.height//com.backgroundImageHeight
 					,	cw = com.height / h * w
 					,	positionX = com.imagePositionX || 0
 					,	repeatNum = Math.ceil(com.width / cw) + 1
@@ -372,6 +394,6 @@ define(function(require, exports, module){
 		}
 	}
 
-	return COMObject;
+	return COM;
 
-})//(MC)
+})(Util.Class, Util.Observer);

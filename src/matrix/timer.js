@@ -1,6 +1,8 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Observer = require('./observer');
+window.Matrix = window.Matrix || {};
 
-	var Observer = require('./observer');
+Matrix.Timer = (function(Class, Observer){
 
 	var RAF = 
 		window.requestAnimationFrame || 
@@ -9,7 +11,9 @@ define(function(require, exports, module){
 			setTimeout(callback, 1 / 60);
 		};
 
-	var Timer = Observer.extend({
+	function Timer(){ }
+
+	Class.extend(Timer, Observer, {
 
 		_loop : function(){
 			if ( !this._run ) return false;
@@ -18,12 +22,12 @@ define(function(require, exports, module){
 			,	lastTime = me.lastTime
 			;
 			RAF(function(){
-				me._loop();
+				if (me._run) me._loop();
 			});
 			var dt = (now - lastTime) / 1000;
 			// if dt time is larger than 2 seconds, We can believe this is cause by debug or other operation
 			if(dt > 2) {
-				dt = 1 / 60;
+				dt = 1 / 30;
 			}
 			me.fire('run', dt)
 			me.lastTime = now;
@@ -47,4 +51,4 @@ define(function(require, exports, module){
 
 	return Timer;
 
-})//(MC, _, MC["CObject"])
+})(Util.Class, Util.Observer);

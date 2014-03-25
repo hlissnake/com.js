@@ -1,22 +1,24 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Observer = require('./observer');
+window.Matrix = window.Matrix || {};
 
-	var Observer = require('./observer');
+Matrix.Loader = (function(Class, Observer){
 
-	var Loader = Observer.extend({
+	function Loader(map){
+		this._assetsNum = 0;
+		this._loadedNum = 0;
+		this._imgMap = {};
 
-		initialize : function(map){
-			this._assetsNum = 0;
-			this._loadedNum = 0;
-			this._imgMap = {};
+		for(var img in map) {
+			this._assetsNum++;
+		}
+		for(var img in map) {
+			var url = map[img];
+			this._loadImag(img, url);
+		}
+	}
 
-			for(var img in map) {
-				this._assetsNum++;
-			}
-			for(var img in map) {
-				var url = map[img];
-				this._loadImag(img, url);
-			}
-		},
+	Class.extend(Loader, Observer, {
 
 		get : function(key){
 			return this._imgMap[key];
@@ -60,4 +62,4 @@ define(function(require, exports, module){
 
 	return Loader;
 
-})//(MC, _, MC["CObject"])
+})(Util.Class, Util.Observer);

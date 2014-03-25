@@ -1,26 +1,30 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Com = require('./com')
+window.COM = window.COM || {};
 
-	var Com = require('./com')
+COM.Sprite = (function(Class, Com){
 
-	var Sprite = Com.extend({
+	function Sprite(options){
+		Sprite._super.call(this, options);
+		
+		this.callbackList = [];
+		this.frameLoop = 0;
+		if(this.autoPlay) {
+			this.play(this.firstAnim);
+		}
+	}
+
+	Class.extend(Sprite, Com, {
 
 		framerate : 0,
-
-		initialize : function(options){
-			this.supr(options);
-			this.callbackList = [];
-			this.frameLoop = 0;
-			if(this.autoPlay) {
-				this.play(this.firstAnim);
-			}
-		},
 
 		setFrameSpeed : function(frameSpeed){
 			this.frameTime = 1 / frameSpeed;
 		},
 
 		_draw : function(dt, ctx){
-			this.supr(dt, ctx);
+			Sprite._super.prototype._draw.call(this, dt, ctx);
+
 			if(this.painter && this._animPlay && !this.isOver) {
 				// if( this.frameTime && this.frameLoop <= this.frameTime ) {
 				if( this.frameLoop < this.framerate ) {
@@ -58,7 +62,6 @@ define(function(require, exports, module){
 
 	});
 
-
 	return Sprite;
 
-});
+})(Util.Class, COM.Com);

@@ -1,65 +1,67 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Observer = require('./observer');
+window.COM = window.COM || {};
 
-	var Observer = require('./observer');
+COM.SpriteSheet = (function(Class, Observer){
 
-	var SpriteSheet = Observer.extend({
+	function SpriteSheet(options){
+		for (var k in options) {
+			if( options[k] === undefined ) continue;
+			this[k] = options[k];
+		}
+
+		// buffer.width = this.image.width;
+		// buffer.height = this.image.height;	
+		// var ctx = buffer.getContext('2d')
+		// ctx.drawImage(this.image, 0, 0);
+		// this.buffer = buffer;
+
+		if(this.frameData && !this.frames) {
+
+			var frameData = this.frameData
+			,	fh = frameData.frameHeight
+			,	fw = frameData.frameWidth
+			,	ih = frameData.imgHeight
+			,	iw = frameData.imgWidth
+			, 	num = frameData.frameNum
+			;
+			var frames = []
+			,	fCol = Math.floor(iw / fw)
+			,	fRow = Math.floor(ih / fh)
+			,	i
+			,	j = 0
+			;
+			for( ; j < fRow; j++) {
+				for( i = 0; i < fCol; i++) {					
+					var fd = [];
+					fd.push(i * fw);
+					fd.push(j * fh);
+					fd.push(fw);
+					fd.push(fh);
+
+					frames.push(fd);//[i * fCol + j] = fd;
+					if( j * fCol + i + 1 >= num ) break; 
+				}
+				if( j * fCol + i + 1 >= num ) break;
+			}
+			this.frames = frames;
+		}
+
+		if(this.animations) {
+			for(var id in this.animations) {
+				this.firstAnim = id;
+				break;
+			}
+		} else {
+			this.maxFrame = this.frames.length - 1;
+			this.minFrame = 0;
+			this.loop = false;
+		}
+	}
+
+	Class.extend(SpriteSheet, Observer, {
 
 		frameIndex : 0,
-
-		initialize : function(options){
-			for (var k in options) {
-				if( options[k] === undefined ) continue;
-				this[k] = options[k];
-			}
-
-			// buffer.width = this.image.width;
-			// buffer.height = this.image.height;	
-			// var ctx = buffer.getContext('2d')
-			// ctx.drawImage(this.image, 0, 0);
-			// this.buffer = buffer;
-
-			if(this.frameData && !this.frames) {
-
-				var frameData = this.frameData
-				,	fh = frameData.frameHeight
-				,	fw = frameData.frameWidth
-				,	ih = frameData.imgHeight
-				,	iw = frameData.imgWidth
-				, 	num = frameData.frameNum
-				;
-				var frames = []
-				,	fCol = Math.floor(iw / fw)
-				,	fRow = Math.floor(ih / fh)
-				,	i
-				,	j = 0
-				;
-				for( ; j < fRow; j++) {
-					for( i = 0; i < fCol; i++) {					
-						var fd = [];
-						fd.push(i * fw);
-						fd.push(j * fh);
-						fd.push(fw);
-						fd.push(fh);
-
-						frames.push(fd);//[i * fCol + j] = fd;
-						if( j * fCol + i + 1 >= num ) break; 
-					}
-					if( j * fCol + i + 1 >= num ) break;
-				}
-				this.frames = frames;
-			}
-
-			if(this.animations) {
-				for(var id in this.animations) {
-					this.firstAnim = id;
-					break;
-				}
-			} else {
-				this.maxFrame = this.frames.length - 1;
-				this.minFrame = 0;
-				this.loop = false;
-			}
-		},
 
 		advance : function(){
 			var animOver = false;
@@ -104,4 +106,4 @@ define(function(require, exports, module){
 
 	return SpriteSheet;
 
-})
+})(Util.Class, Util.Observer);

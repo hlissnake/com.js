@@ -1,16 +1,17 @@
-define(function(require, exports, module){
+// define(function(require, exports, module){
+// 	var Com = require('../src/com/com')
+// 	,	Timer = require('../util/timer')
+// 	, 	Loader = require('../util/loader')
+// 	,	Observer = require('../util/observer')
+// 	;
 
-	var Com = require('../src/com/com')
-	,	Timer = require('../util/timer')
-	, 	Loader = require('../util/loader')
-	,	Observer = require('../util/observer')
-	;
+var Game = (function(Class, Observer, Timer, Loader){
 
-	var Game = Observer.extend({
+	function Game(){ 
 
-		initialize : function(){
+	}
 
-		},
+	Class.extend(Game, Observer, {
 
 		get : function(key){
 			return this.loader.get(key);
@@ -43,14 +44,6 @@ define(function(require, exports, module){
 
 				_update.call(game, dt);
 
-				if (isAndroid) {
-			    	if(canvas.style.opacity) {
-			    		canvas.style.opacity = '';
-			    	} else {
-			    		canvas.style.opacity = '0.99';
-			    	}
-			    }
-
 			});
 		},
 
@@ -80,4 +73,4 @@ define(function(require, exports, module){
 
 	return Game;
 
-})//(MC, _, MC["CObject"])
+ })(Util.Class, Util.Observer, Matrix.Timer, Matrix.Loader);
