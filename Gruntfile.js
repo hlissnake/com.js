@@ -26,6 +26,8 @@ module.exports = function (grunt) {
     ];
 
     var MatrixClassList = [
+        'src/matrix/howler.js',
+        'src/matrix/audio.js',
         'src/matrix/loader.js',
         'src/matrix/timer.js',
         'src/matrix/game.js'

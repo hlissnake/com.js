@@ -1,17 +1,15 @@
 // define(function(require, exports, module){
-	// var Observer = require('./observer')
-	// ;
+// 	var Observer = require('./observer')
+// 	;
 window.COM = window.COM || {};
-
 COM.Com = (function(Class, Observer){
+
+// ##module = "COM"
+// ##requires = [{Observer = './observer'}]
 
 	var _COMEvents = ',touchend,touchmove,touchstart,click,mousemove,'
 	,	_COMCustomEvents = ',tap,pinch,swipe,rotate,hold,'
 	;
-
-	if(window.location.search.indexOf('_debug_') > -1) {
-		window['_DEBUG_'] = true;
-	}
 
 	function COM(options){
 		if(options.getContext) {
@@ -35,6 +33,8 @@ COM.Com = (function(Class, Observer){
 				this._flashLoop = 0;
 			}
 		}
+		this.ev_map = {};
+		// this.scaleRatio = window.devicePixelRatio
 	}
 
 	Class.extend(COM, Observer, {
@@ -52,10 +52,6 @@ COM.Com = (function(Class, Observer){
 		opacity : 1,
 		visible : true,
 		zIndex : 0,
-		// shape : [],
-		// painter : [],
-		behaviors : [],
-		ev_map : {},
 
 		append : function(com){
 			this.children = this.children || [];
@@ -83,13 +79,26 @@ COM.Com = (function(Class, Observer){
 			}
 		},
 
-		clear : function(dirty, context){
+		destroy : function(){
+			if(this.type == 'stage') {
+				// this.children.length
+			} else {
+				this.stage.remove(this);
+			}
+		},
+
+		clear : function(backgroundColor, context){
 			var context = context || this.context;
 			if(!context) {
 				throw "no canvas context for this COM-Object";
 				return;
 			}
-			context.clearRect(this.x + this.lineWidth, this.y + this.lineWidth, this.width + 2 * this.lineWidth, this.height + 2* this.lineWidth);
+			if (backgroundColor) {
+				context.fillStyle = backgroundColor; // android下解决重影BUG，背景色采用游戏素材背景色
+				context.fillRect(this.x, this.y, this.width, this.height);
+			} else {
+				context.clearRect(this.x + this.lineWidth, this.y + this.lineWidth, this.width + 2 * this.lineWidth, this.height + 2 * this.lineWidth);
+			}
 		},
 
 		render : function(dt, context){
@@ -148,10 +157,15 @@ COM.Com = (function(Class, Observer){
 					context.scale(this.scaleX, this.scaleY);
 				}
 				if(this.skewX || this.skewY){
-					context.transform(1, Math.tan(this.skewY * Math.PI / 180), Math.tan(this.skewX * Math.PI / 180), 1, 0, 0);
+					context.transform(1, Math.tan( (this.skewY || 0) * Math.PI / 180), Math.tan( (this.skewX || 0) * Math.PI / 180), 1, 0, 0);
 				}
 				context.translate( -translateX, -translateY);
 			}
+			// context.shadowBlur = 10;
+			// context.shadowOffsetX = 20;
+			// context.shadowOffsetY = 20;
+			// context.shadowColor = "black";
+
 			if(this.opacity) 
 				context.globalAlpha = this.opacity;
 
@@ -188,11 +202,6 @@ COM.Com = (function(Class, Observer){
 				if(this.fillColor) context.fill();
 				if(this.strokeColor) context.stroke();
 			}
-			if( window['_DEBUG_'] ) {
-				context.strokeStyle = 'rgba(1,1,1,0.6)'
-				context.lineWidth = 2;
-				context.stroke();
-			}
 		},
 
 		/**
@@ -208,7 +217,7 @@ COM.Com = (function(Class, Observer){
 					callback && callback.call(me, e);			
 				}, true);
 			} else if ( _COMCustomEvents.indexOf(',' + ev + ',') > -1) {
-
+				// use hammerjs to expand the gesture events
 			} else {
 				COM._super.prototype.on.call(this, ev, callback);
 			}
@@ -273,8 +282,8 @@ COM.Com = (function(Class, Observer){
 				pageY = e.pageY;
 			}
 			coordinate = {
-				x : pageX - canvasOffset.left * (canvas.width / canvasOffset.width),
-				y : pageY - canvasOffset.top * (canvas.height / canvasOffset.height)
+				x : (pageX - canvasOffset.left) * (canvas.width / canvasOffset.width),
+				y : (pageY - canvasOffset.top) * (canvas.height / canvasOffset.height)
 			}
 
 			var callbackList = this.ev_map[eventType];
@@ -311,7 +320,7 @@ COM.Com = (function(Class, Observer){
 					ctx.closePath();
 					inPath = ctx.isPointInPath(coord.x, coord.y);
 				}
-				
+
 				if(inPath) {
 					target = com;
 					// only listen com self, no need to find children target, quit the function recursion
@@ -392,6 +401,24 @@ COM.Com = (function(Class, Observer){
 				}
 			}
 		}
+	}
+
+	// in debug mode, override _draw method of COM Class. 
+	// excute this logic in Class defining process should avoid loop if in Game tick loop. so improve the prefermance
+	if (window.location.search.indexOf('_debug_') > -1) {
+		COM.prototype._draw = function(dt, context){
+			if(!this.visible) return false;
+			if (this.painter) {
+				this.painter.draw(this, context, dt);
+			} else {
+				if(this.fillColor) context.fill();
+				if(this.strokeColor) context.stroke();
+			}
+			// in debug mode, paint the shape line of the com object
+			context.strokeStyle = 'rgba(1,1,1,0.6)'
+			context.lineWidth = 2;
+			context.stroke();
+		};
 	}
 
 	return COM;

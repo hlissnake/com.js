@@ -1,0 +1,199 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+</head>
+<body onload="onload">
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#canvas {
+		display: none;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#panel {
+		width: 100%;
+		height: 60px;
+		padding-top: 30px;
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
+	#panel .item {
+		display: inline-block;
+		width: 40px;
+		height: 40px;
+		-webkit-border-radius : 50%;
+		background-color: green;
+		position: absolute;
+		top: 30px;
+		left: 15px;
+	}
+	#panel .item.active {
+		/*-webkit-transform: scale(2);*/
+	}
+	#first {
+		/*left: 15px;*/
+	}
+	#second {
+		-webkit-transform: translateX(50px);
+	}
+	#third {
+		-webkit-transform: translateX(100px);
+	}
+	#fouth {
+		-webkit-transform: translateX(150px);
+	}
+	#fifth {
+		-webkit-transform: translateX(200px);
+	}
+
+	#ease {
+		position: absolute;
+		left: 15%;
+		top: 100px;
+	}
+
+	#stop {
+		position: absolute;
+		left: 50%;
+		top: 100px;
+	}
+
+	#start {
+		position: absolute;
+		left: 65%;
+		top: 100px;
+	}
+
+</style>	
+
+<canvas id="canvas">
+</canvas>
+
+<div id="panel">
+	<div class="item" id="first" data-index="0">
+	</div>
+	<div class="item" id="second" data-index="1">
+	</div>
+	<div class="item active" id="third" data-index="2">
+	</div>
+	<div class="item" id="fouth" data-index="3">
+	</div>
+	<div class="item" id="fifth" data-index="4">
+	</div>
+</div>
+
+<select id="ease">
+	<option value="Linear.None">匀速</option>
+	<option value="Quadratic.In">ease</option>
+	<option value="Back.In">Back.In</option>
+	<option value="Back.InOut">Back.InOut</option>
+	<option value="Bounce.In">Bounce.In</option>
+</select>
+
+<button id="stop">stop</butto>
+<button id="start">start</butto>
+
+<script src="../src/util/tween.js"></script>
+<script src="http://g.tbcdn.cn/mtb/zepto/1.0.4/zepto.js"></script>
+<script type="text/javascript">
+
+var RAF_Stop = true
+,	items = $('#panel .item')
+,	activeIndex = 0
+,	perviousIndex
+,	tween
+,	scaleRatio = 1.8
+,   RAF = 
+    window.requestAnimationFrame || 
+    window.webkitRequestAnimationFrame || 
+    function(callback){
+        setTimeout(callback, 1 / 30);
+    };
+;
+
+function calculatePosition(scale){
+	var stackWidth = -50
+	,	scaleOffset = 0
+	,	i = 0
+	,	translateX = 0
+	;
+	for( ; i < 5; i++ ) {
+		var item = items[i];
+		if (activeIndex == i) {
+			scaleOffset = (scale - 1) * 50 / 2
+			stackWidth += 50 + scaleOffset;
+			item.style.webkitTransform = 'translateX(' + stackWidth + 'px) scale(' + scale + ')';
+			stackWidth += scaleOffset;
+		} else if (perviousIndex == i) {
+			scaleOffset = (scaleRatio - scale) * 50 / 2
+			stackWidth += 50 + scaleOffset;
+			item.style.webkitTransform = 'translateX(' + stackWidth + 'px) scale(' + (scaleRatio + 1 - scale) + ')';
+			stackWidth += scaleOffset;
+		} else {
+			stackWidth += 50;
+			item.style.webkitTransform = 'translateX(' + stackWidth + 'px)';
+		}
+	}
+}
+
+function tweenAnim(){
+	var easeType = $('#ease').val();
+	eval("var TweenEase = TWEEN.Easing." + easeType);
+	tween = new TWEEN.Tween( { scale: 1 } )
+        .to( { scale: scaleRatio }, 600 )
+        .easing( TweenEase )//Quadratic.In )
+        .onUpdate( function () {
+            calculatePosition(this.scale);
+        })
+        .onComplete( function(){
+        	RAF_Stop = true;
+        	perviousIndex = activeIndex;
+        })
+        .start();
+
+    RAF_Stop = false;
+	trick(0);
+}
+
+function trick(timestamp){
+	if(RAF_Stop) return;
+	RAF(trick);
+	TWEEN.update();
+}
+
+items.on('click', function(e){
+	if(RAF_Stop) {
+		activeIndex = this.dataset['index'] * 1;
+		tweenAnim();
+	}
+});
+
+$('#stop').on('click', function(e){
+	tween.stop();
+});
+
+$('#start').on('click', function(e){
+	tween.start();
+})
+
+</script>
+
+</body>
+</html>

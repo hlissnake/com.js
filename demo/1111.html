@@ -1,0 +1,220 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body>
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+	#text {
+		display: none;
+	}
+	canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+</style>	
+
+<p id="text">
+
+HTML5, Canvas, GameDev: 用绿色字体
+Tmall.1111 用红色字体
+/**
+ * If you love flappy bird, Angry bird or Plant vs Zombie etc.
+ * you are just the 11.11 isv partner we are looking for!
+ * We’ll offer the stage, you present!
+ */
+if( YOU.can(HTML5) || 
+	YOU.can(Canvas) || 
+	YOU.can(GameDev) ||
+	YOU.loveGame() ){
+
+	join(Tmall.1111).then(function(api){
+		api.call(YOU, [
+			Hybird, 
+			CrossEnd,
+			Open
+		]);
+	});
+}
+else{
+	play(Tmall.1111.Shops.Gamessss...)
+}
+</p>
+
+<canvas id="eleven"></canvas>
+
+<script src="../build/com.js"></script>
+<script src="../build/matrix.js"></script>
+<script>
+
+var text = document.getElementById('text').innerText;
+
+var canvas = document.getElementById('eleven');
+canvas.width = BodyWidth = document.body.getBoundingClientRect().width * devicePixelRatio;
+canvas.height = BodyHeight = document.body.getBoundingClientRect().height * devicePixelRatio;
+
+var Loader = Matrix.Loader
+,	loader = new Loader({
+		'background' : 'http://www.rdio.com/media/images/2/marketing/resolve-blue.png'
+	})
+,	Com = COM.Com
+,	timer = new Matrix.Timer()
+,	stage = new Com(canvas)
+,	fontList = []
+;
+
+var fontsize = 25,
+	fontlen = 0;
+	perviousX = -fontsize,
+	row = 1,
+	reg = /\r\n/,
+	encode = '%0A';
+
+
+loader.on('complete', function(status, img){
+
+	var background = new Com({
+		width : stage.width,
+		height : stage.height,
+		opacity : 0.9,
+		backgroundImage : loader.get('background'),
+		shape : Com.Shape.Rect,
+		painter : Com.Painter.Bitmap
+	});
+
+	stage.append(background);
+
+	for(var i = 0; i < text.length; i++) {
+		var char = text.charAt(i),
+			x, y;
+		// if((i * 30 % row) >= (BodyWidth - 30)) {
+		if ( reg.test(char) || (encode == encodeURI(char)) ) {
+			perviousX = -fontsize;
+			row++;
+		} else {
+			fontlen++;
+			perviousX += fontsize;
+			x = perviousX;
+			y = row * fontsize + 2;
+			var txt = new Com({
+				x : x,
+				y : y,
+				width : fontsize,
+				height : fontsize,
+				text : text.charAt(i),
+				fillColor : '#fff',
+				font : '25px Palatino',
+				shape : Com.Shape.Rect,
+				painter : Com.Painter.Text
+			});
+			fontList.push(txt);
+			stage.append(txt);
+		}
+	}
+
+	stage.render();
+
+	timer.on('run', function(dt){
+		stage.clear();
+		stage.render();
+		TWEEN.update();
+	});
+
+	var elevenMatrix = [
+		[],
+		[],
+		[],
+		[],
+		[]
+	]
+
+	var randomList = [],
+		randomCount = 0
+		totalComplete = 0;
+
+	for(var i = 0; i < fontlen; i++) {
+		randomList[i] = i;
+	}
+
+	function getRandomIndex(count){
+		var rdIndex = Math.floor( Math.random() * (fontlen - randomCount) );
+		rd = randomList[rdIndex];
+		randomCount++;
+		randomList.splice(rdIndex,1);
+		if(rd == undefined){
+			console.log('log')
+		}
+		return {
+			v : rd,
+			i : rdIndex
+		};
+	}
+
+	setTimeout(function(){
+		var eachIndex = Math.ceil(fontlen / elevenMatrix.length),
+			useIndex = 0,
+			targetX = 0;
+
+		for(var i = 0; i < elevenMatrix.length; i++) {
+			var col = elevenMatrix[i],
+				targetX = targetX + BodyWidth / 6;//(i == 2 ? BodyWidth * 0.4 : BodyWidth * 0.15);
+				targetY = 80;
+			for (var j = 0; j < eachIndex; j++) {
+				useIndex++;
+				if(useIndex > fontlen) {
+					break;
+				}
+				col[j] = getRandomIndex().v;
+
+				var txtCom = fontList[col[j]], tx;
+				if (i == 2) {
+					targetY = Math.random() * 80 + (80 + fontsize * eachIndex / 2);
+					tx = Math.random() * 80 + targetX - 40
+				} else {
+					targetY += fontsize;
+					tx = targetX;
+				}
+
+				(function(com, sx, sy){
+					new TWEEN.Tween( { x : com.x, y : com.y } )
+					    .to( { x : sx, y : sy }, 1000 )
+					    .easing( TWEEN.Easing.Quintic.Out)
+					    .delay( useIndex * 3 )
+					    .onUpdate( function () {
+					    	com.x = this.x;
+					    	com.y = this.y;
+					    })
+					    .onComplete(function(){
+							totalComplete++;
+							if(totalComplete > fontlen) {
+								timer.pause();
+							}
+					    })
+						.start();
+				})(txtCom, tx, targetY)
+			}
+		}
+
+		timer.start();
+	}, 1000);
+
+});
+
+</script>
+
+</body>
+</html>

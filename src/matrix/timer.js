@@ -25,8 +25,9 @@ Matrix.Timer = (function(Class, Observer){
 				if (me._run) me._loop();
 			});
 			var dt = (now - lastTime) / 1000;
-			// if dt time is larger than 2 seconds, We can believe this is cause by debug or other operation
-			if(dt > 2) {
+			// if diff time is longer than 200ms, We can believe that is because of debug or other thread blocking
+			// then we make dt to a normal status, 30fps,32ms may be greatsd
+			if(dt > 0.2) {
 				dt = 1 / 30;
 			}
 			me.fire('run', dt)

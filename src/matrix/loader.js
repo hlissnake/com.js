@@ -4,18 +4,28 @@ window.Matrix = window.Matrix || {};
 
 Matrix.Loader = (function(Class, Observer){
 
-	function Loader(map){
+	function Loader(imgMap){
 		this._assetsNum = 0;
 		this._loadedNum = 0;
 		this._imgMap = {};
 
-		for(var img in map) {
+		// load image
+		for(var img in imgMap) {
 			this._assetsNum++;
 		}
-		for(var img in map) {
-			var url = map[img];
+		for(var img in imgMap) {
+			var url = imgMap[img];
 			this._loadImag(img, url);
 		}
+
+		// load audio, use howler.js
+		// for(var audio in audioMap) {
+		// 	this._assetsNum++;
+		// }
+		// for(var audio in audioMap) {
+		// 	var url = audioMap[audio];
+		// 	this._loadAudio(audio, url);
+		// }
 	}
 
 	Class.extend(Loader, Observer, {
@@ -54,7 +64,7 @@ Matrix.Loader = (function(Class, Observer){
 			if(this._loadedNum == this._assetsNum) {
 				this.fire('complete');
 			} else {
-				this.fire('load', this._loadedNum, img)
+				this.fire('load', this._loadedNum / this._assetsNum, img)
 			}
 		}
 

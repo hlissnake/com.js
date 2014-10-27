@@ -1,0 +1,253 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+</head>
+<body onload="onload">
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	body {
+		-webkit-perspective: 1000px;
+	}
+
+	#toggle-3d {
+		position: absolute;
+		right: 10%;
+		top: 60px;
+		width: 100px;
+		height: 50px;
+		margin-left: -50px;
+		margin-top: -25px;
+		z-index: 19999;
+	}
+
+	#background {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-color: #5AACC0;
+		-webkit-transition: -webkit-transform 0.6 ease;
+		/*-webkit-transform: rotateY(45deg) rotateZ(-4deg) scale(0.9);*/
+		transform-style: preserve-3d;
+	}
+
+	#ball {
+		display: inline-block;
+		width: 60px;
+		height: 60px;
+		-webkit-border-radius : 50%;
+		background-color: green;
+		position: absolute;
+		bottom: 60px;
+		left: 30px;
+		margin-top: -30px;
+		margin-left: -30px;
+		background: url(./laiwang.png) no-repeat;
+		background-size: 60px 60px;
+	}
+	#ground {
+		width: 100%;
+		height: 60px;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		background-color: green;
+		/*-webkit-transform: translateZ(20px);*/
+	}
+
+</style>	
+<button id="toggle-3d">Toggle 3D Stage</button>
+<div id="background">
+	<div id="ball"></div>
+	<div id="ground"></div>
+</div>
+
+
+<script src="../src/util/tween.js"></script>
+<script src="http://g.tbcdn.cn/mtb/zepto/1.0.4/zepto.js"></script>
+<script type="text/javascript">
+
+(function(){
+
+	var RAF_Stop = true
+	,	MaxWidth = document.body.getBoundingClientRect().width
+	,	MaxHeight = document.body.getBoundingClientRect().height
+	,	Ball = document.getElementById('ball')
+	,	BallStyle = ball.style
+	,	BallWidth = 60
+	,	BallObject = {
+			x : 40,
+			y : -MaxHeight,
+			rotate : 0,
+			velocityX : 0,
+			velocityY : 0
+		}
+	,	AccelerationX
+	,	Gravity = 1200
+	,	RoundLine = Math.PI * BallWidth
+	,	perviousTime
+	,	Ball_TZ = 0
+	,   RAF = 
+	    window.requestAnimationFrame || 
+	    window.webkitRequestAnimationFrame || 
+	    function(callback){
+	        setTimeout(callback, 1 / 30);
+	    }
+	;
+
+	function Render(){
+		BallStyle.webkitTransform = "translate3d(" + BallObject.x + "px, " + BallObject.y + "px, " + Ball_TZ + "px) rotate(" + BallObject.rotate + "deg)"
+	}
+
+	function CalculatePosition(dt){
+		var s = BallObject.velocityX * dt + AccelerationX * Math.pow(dt, 2)
+		,	rotateMove = 360 * s / RoundLine
+		;
+		BallObject.x += s;
+		BallObject.rotate += rotateMove
+		// BallObject.y >= 0 ? BallObject.rotate += rotateMove : false ;
+		BallObject.velocityX += dt * AccelerationX
+	}
+
+	function CheckRegin(){
+		if(BallObject.x < 0 && BallObject.velocityX < 0){
+			BallObject.x = 0;
+			BallObject.velocityX = - BallObject.velocityX / 3;
+			return false;
+		} else if (BallObject.x > (MaxWidth - BallWidth) && BallObject.velocityX > 0) {
+			BallObject.x = MaxWidth - BallWidth;
+			BallObject.velocityX = - BallObject.velocityX / 3;
+			return false;
+		}
+		return true;
+	}
+
+	function CalculateGravity(dt){
+		var s = BallObject.velocityY * dt + Gravity * Math.pow(dt, 2)
+		;
+		BallObject.y += s;
+		BallObject.velocityY += dt * Gravity
+	}
+
+	function CheckLand(dt){
+		var v = BallObject.velocityY,
+			s = BallObject.y,
+			result = true;
+		if( s >= 0 && v > 0 ) {
+			BallObject.y = 0;
+			BallObject.velocityY = - v / 2; console.log(dt);
+			result = false;
+		}
+		if ( Math.abs(s) < 1 && Math.abs(v) < 1 ) {
+			result = true;
+		}
+		return true;
+	}
+
+    // 判斷是否要停止，避免穿透現象
+    function shouldStopY (v, s, maxS) {
+    	// 当速度为0，且在终点附近，则停止
+    	if (Math.abs(v) < 1 && Math.abs(s - maxS) < 1) {
+    		return false;
+    	}
+    	return true;
+    };
+
+	function trick(timestamp){
+		if(RAF_Stop) return;
+		RAF(trick);
+		// TWEEN.update();
+
+		var now = (+new Date)
+		,	delatTime = now - perviousTime
+		,	dt = delatTime > 100 ? 30 : delatTime
+		;
+		if(CheckRegin()) {
+			CalculatePosition(dt / 1000);
+		}
+		if(CheckLand(dt)) {
+			CalculateGravity(dt / 1000);
+		}
+		Render();
+		TWEEN.update();
+
+		perviousTime = now;
+	}
+
+	(function init(){
+
+		AccelerationX = 0;
+		window.addEventListener('deviceorientation', function(ev){
+			// Z轴切面的倾斜角度
+	        AccelerationX = ev.gamma * 10;
+		});
+
+		document.getElementById('ball').addEventListener('touchend', function(ev){
+			// Z轴切面的倾斜角度
+			// if(BallObject.y >= 0) {
+	        	BallObject.velocityY = -600;
+			// }
+		});
+
+		var threeD = false
+		,	status3D = { ry: 45, rz : -4, s : 0.9, btz : 60, gz : 26 }
+		,	statusNormal = { ry: 0, rz : 0, s : 1, btz : 0, gz : 0 }
+		;
+		document.getElementById('toggle-3d').addEventListener('touchend', function(e){
+
+			if(threeD) {
+				to = { ry: 0, rz : 0, s : 1, btz : 0, gz : 0 };
+				from = { ry: 45, rz : -4, s : 0.9, btz : 60, gz : 26 };
+			} else {
+				to = { ry: 45, rz : -4, s : 0.9, btz : 60, gz : 26 };
+				from = { ry: 0, rz : 0, s : 1, btz : 0, gz : 0 };
+			}
+
+			var backgroundStyle = document.getElementById('background').style
+			,	groundStyle = document.getElementById('ground').style
+			;
+			new TWEEN.Tween( from )
+		        .to( to, 600 )
+		        .easing( TWEEN.Easing.Quadratic.In )
+		        .onUpdate(function(){
+		            backgroundStyle.webkitTransform = 'rotateY(' + this.ry + 'deg) rotateZ(' + this.rz + 'deg) scale(' + this.s + ')';
+		            groundStyle.webkitTransform = 'translateZ(' + this.gz + 'px)';
+		            Ball_TZ = this.btz;
+		        })
+		        .onComplete(function(){
+					
+					// threeD ? Ball_TZ = 0 : Ball_TZ = 50;
+					threeD = !threeD;
+		        })
+		        .start();
+
+		});
+
+		document.body.addEventListener('touchmove', function(ev){
+			ev.preventDefault();
+		});
+
+		RAF_Stop = false;
+		perviousTime = (+new Date);
+		trick();
+	})()
+
+})();
+
+</script>
+
+</body>
+</html>

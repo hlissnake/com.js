@@ -1,0 +1,163 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+
+    <script src="../build/com.js"></script>
+    <script src="../build/matrix.js"></script>
+</head>
+<body onload="onload">
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+	#canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+	}
+	#buffer {
+		display: none;
+	}
+	@-webkit-keyframes circle {
+	    0% {-webkit-transform: rotate(0deg);}
+	    100% {-webkit-transform: rotate(359deg);}
+	}
+	@keyframes circle {
+	    0% {transform: rotate(0deg);}
+	    100% { transform: rotate(359deg);}
+	}
+
+</style>	
+
+<canvas id="canvas"></canvas>
+
+<img id="font-resource">
+
+<script type="text/javascript">
+
+var canvas = document.getElementById('canvas');
+canvas.width = BodyWidth = document.body.getBoundingClientRect().width * devicePixelRatio;
+canvas.height = BodyHeight = document.body.getBoundingClientRect().height * devicePixelRatio;
+
+var ctx = canvas.getContext('2d');
+
+// ctx.fillStyle = '#2D4F99';
+// ctx.globalAlpha = 0.7;
+// // ctx.fill();
+// ctx.fillRect(0,0,BodyWidth,BodyHeight);
+
+	var assetsMap = {
+		'background' : 'http://gtms03.alicdn.com/tps/i3/TB1Ug1mFFXXXXbGaXXXIYrfVVXX-640-1136.gif'//http://www.rdio.com/media/images/2/marketing/resolve-blue.png'
+	};
+	var Loader = Matrix.Loader
+	,	Com = COM.Com
+	,	loader = new Loader(assetsMap)
+	,	timer = new Matrix.Timer()
+	,	stage = new Com(canvas)
+	;
+
+	function createCube(cubeConfig){
+		var aspect25RotateDeg = 22.6 * Math.PI / 180
+		,	aspectWidth = cubeConfig.width * Math.cos(aspect25RotateDeg)
+		,	aspectHeight = cubeConfig.width * Math.sin(aspect25RotateDeg)
+		,	skewAngle = cubeConfig.angle || 22.6
+		;
+		var cube = new Com({
+			x : cubeConfig.x,
+			y : cubeConfig.y - aspectHeight,
+			width : aspectWidth * 2,
+			height : cubeConfig.height + aspectHeight * 2
+		});
+
+		cube.append(new Com({
+			x : cubeConfig.x,
+			y : cubeConfig.y,
+			width : aspectWidth,
+			height : cubeConfig.height,
+			shape : Com.Shape.Rect,
+			backgroundImage : loader.get('background'),
+			skewY : skewAngle,
+			fillColor : '#666',
+			strokeColor : '#333'
+		}));
+		cube.append(new Com({
+			x : cubeConfig.x + aspectWidth,
+			y : cubeConfig.y,
+			width : aspectWidth,
+			height : cubeConfig.height,
+			shape : Com.Shape.Rect,
+			backgroundImage : loader.get('background'),
+			skewY : -skewAngle,
+			fillColor : '#888',
+			strokeColor : '#333'
+		}));
+		cube.append(new Com({
+			x : cubeConfig.x + aspectWidth / 2,
+			y : cubeConfig.y - aspectHeight * 1.7 ,
+			width : aspectWidth,
+			height : aspectWidth,
+			shape : Com.Shape.Rect,
+			rotate : -45,
+			skewX : skewAngle,
+			skewY : skewAngle,
+			fillColor : '#AAA',
+			strokeColor : '#333'
+		}));
+
+		return cube;
+	}
+
+	loader.on('complete', function(status, img){
+
+		stage.append(createCube({
+			x : 150,
+			y : 150,
+			width : 100,
+			height : 100
+		}));
+		stage.append(createCube({
+			x : 222,
+			y : 190,
+			width : 100,
+			height : 100
+		}));
+		stage.render();
+
+	});
+
+	var gif = document.getElementById('font-resource')
+	,	gifAnimImageData = []
+	,	i = 0
+	,	GifAnimEnd = false
+	;
+	gif.onload = function(){
+		// GifAnimEnd = true;
+		timer.start();
+	}
+	gif.src = 'http://38.media.tumblr.com/tumblr_ljr9qn6UVZ1qii50go1_400.gif';
+
+	timer.on('run', function(dt){
+		// if (!GifAnimEnd) {
+			var w = gif.width, h = gif.height;
+			ctx.clearRect(0, 0, w, h);
+			ctx.drawImage(gif, 0, 0, w, h);
+			gifAnimImageData[i++] = ctx.getImageData(0, 0, w, h);
+		// }
+	});
+
+
+</script>
+
+</body>
+</html>

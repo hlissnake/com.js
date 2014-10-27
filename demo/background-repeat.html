@@ -1,0 +1,208 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+</head>
+<body onload="onload">
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}	
+	@-webkit-keyframes x-axis-move {
+	    0% {-webkit-transform: translateX(0);}
+	    100% {-webkit-transform: translateX(300%);}
+	}
+	@-webkit-keyframes y-axis-move {
+	    0% {-webkit-transform: translateY(0);}
+	    100% {-webkit-transform: translateY(-500%);}
+	}
+	#loading {
+		display: none;
+	    background-image: url(http://gtms01.alicdn.com/tps/i1/T1CRMcFaFlXXX1dP6j-60-60.png);
+	    background-repeat: no-repeat;
+	    background-size: 30px 30px;
+	    -moz-animation: circle 1s infinite linear;
+	    -o-animation: circle 1s infinite linear;
+	    -webkit-animation: circle 1s infinite linear;
+	    animation: circle 1s infinite linear;
+	    width: 30px;
+	    height: 30px;
+	    margin: 0 auto;
+	    margin-top: 150px;
+	}
+
+	#canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#backgroundSize {
+		display: none;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url(http://gtms03.alicdn.com/tps/i3/TB1Ug1mFFXXXXbGaXXXIYrfVVXX-640-1136.gif);
+		background-repeat: repeat;
+		background-size: 15% 15%;
+		background-position: center;
+		-webkit-transform: translateZ(0);
+		-webkit-transition: background-size .8s ease-in-out;
+	}
+
+
+	#ease {
+		position: absolute;
+		left: 15%;
+		bottom: 30px;
+	}
+	
+	#playCanvas {
+		position: absolute;
+		left: 15%;
+		bottom: 10px;
+	}
+
+	#playBackgroundSize {
+		position: absolute;
+		left: 50%;
+		bottom: 10px;
+	}
+
+</style>	
+
+<canvas id="canvas">
+</canvas>
+
+<div id="backgroundSize">
+</div>
+
+
+<select id="ease">
+	<option value="Linear.None">匀速</option>
+	<option value="Quadratic.In">ease</option>
+	<option value="Back.In">Back.In</option>
+	<option value="Back.InOut">Back.InOut</option>
+	<option value="Bounce.In">Bounce.In</option>
+</select>
+<button id="playCanvas">Canvas</button>
+<button id="playBackgroundSize">backgroundSize</button>
+
+<script src="../src/util/tween.js"></script>
+<script type="text/javascript">
+
+var $ = function(selector){
+		return document.querySelector(selector);
+	}
+,	playCanvas = $('#playCanvas')
+,	playBackgroundSize = $('#playBackgroundSize')
+,	canvas = $('#canvas')
+,	backgroundSize = $('#backgroundSize')
+,   RAF = 
+    window.requestAnimationFrame || 
+    window.webkitRequestAnimationFrame || 
+    function(callback){
+        setTimeout(callback, 1 / 30);
+    };
+;
+
+canvas.width = BodyWidth = document.body.getBoundingClientRect().width * devicePixelRatio;
+canvas.height = BodyHeight = document.body.getBoundingClientRect().height * devicePixelRatio;
+
+var ctx = canvas.getContext('2d')
+,	texture = new Image()
+,	startPercentage = 15
+,	RAF_Stop = true
+;
+
+texture.onload = function(){
+	canvasRender();
+}
+texture.src = 'http://gtms03.alicdn.com/tps/i3/TB1Ug1mFFXXXXbGaXXXIYrfVVXX-640-1136.gif';
+
+playCanvas.addEventListener('click', function(e){
+	canvas.style.display = 'block';
+	backgroundSize.style.display = 'none';
+	backgroundSize.style.backgroundSize = '15% 15%';
+	canvasRender();
+});
+
+playBackgroundSize.addEventListener('click', function(e){
+	backgroundSize.style.display = 'block';
+	canvas.style.display = 'none';
+	setTimeout(function(){
+		backgroundSizeRender();
+	});
+});
+
+function backgroundSizeRender(){
+	backgroundSize.style.backgroundSize = '100% 100%';
+}
+
+function canvasRender(){
+	if( RAF_Stop ) {
+		var easeType = $('#ease').value;
+		eval("var TweenEase = TWEEN.Easing." + easeType);
+		var tween = new TWEEN.Tween( { percentage: 15 } )
+	        .to( { percentage: 100 }, 800 )
+	        .easing( TweenEase )//Linear.None )
+	        .onUpdate( function () {
+	            drawRepeatImage(this.percentage);
+	        })
+	        .onComplete( function(){
+	        	RAF_Stop = true;
+	        })
+	        .start();
+
+	    RAF_Stop = false;
+		trick(0);
+	}
+}
+
+function trick(timestamp){
+	if(RAF_Stop) return;
+	RAF(trick);
+	TWEEN.update();
+}
+
+function drawRepeatImage(percentage){
+	var i = 0
+	,	j = 0
+	,	cutWidth = BodyWidth * percentage / 100
+	,	cutHeight = BodyHeight * percentage / 100
+	,	maxIndex = Math.ceil( (100 - percentage) / 2 / percentage ) * 2 + 1
+	,	overRatio = ( 100 >= percentage ? (percentage - Math.abs(100 - percentage) / 2 % percentage) : (percentage - 100) / 2 ) / 100
+	// ,	overRatio = (percentage - Math.abs(100 - percentage) / 2 % percentage) / 100
+	,	overageW = BodyWidth * overRatio
+	,	overageH = BodyHeight * overRatio
+	;
+	// ctx.clearRect(0,0,BodyWidth,BodyHeight);
+	if(percentage > 100) {
+		console.log('1');
+	}
+	ctx.save();
+	ctx.transform(1, 0, 0, 1, 0, 0); //Math.tan(30 * Math.PI / 180) Math.tan(0 * Math.PI / 180)
+	for ( ; i < maxIndex; i++) {
+		for (j = 0; j < maxIndex; j++) {
+			ctx.drawImage(texture, i * cutWidth - overageW, j * cutHeight - overageH, cutWidth, cutHeight);
+		}
+	}
+	ctx.restore();
+}
+
+</script>
+
+</body>
+</html>
