@@ -1,0 +1,118 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+</head>
+<body onload="onload">
+<style>
+
+	body, div {
+		text-align: -webkit-center;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#stage{
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 320px;
+		height: 320px;
+		margin: -160px 0 0 -160px;
+		-webkit-transform-style: preserve-3d;
+		-webkit-perspective: 160px;
+	}
+	#cute {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 320px;
+		height: 320px;
+		margin: -160px 0 0 -160px;
+		-webkit-transform-style: preserve-3d;
+		-webkit-transform: translateZ(160px) rotateX(45deg) rotateY(45deg);
+	}
+	#cute div{
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		/*opacity: 0.7;*/
+		/*border: 1px solid blue;*/
+	}
+	#front {
+		background-color: pink;
+		-webkit-transform: translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/003.jpg);
+		background-size: 100% 100%;
+	}
+	#back {
+		background-color: green;
+		-webkit-transform: rotateY(180deg) translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/001.jpg);
+		background-size: 100% 100%;
+	}
+	#left {
+		background-color: red;
+		-webkit-transform: rotateY(-90deg) translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/002.jpg);
+		background-size: 100% 100%;
+	}
+	#right {
+		background-color: yellow;
+		-webkit-transform: rotateY(90deg) translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/004.jpg);
+		background-size: 100% 100%;
+	}
+	#up {
+		background-color: gray;
+		-webkit-transform: rotateX(90deg) translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/005.jpg);
+		background-size: 100% 100%;
+	}
+	#down {
+		background-color: black;
+		-webkit-transform: rotateX(-90deg) translateZ(159px);
+		background: url(http://ttxah.b0.upaiyun.com/smart/images/006.jpg);
+		background-size: 100% 100%;
+	}
+
+</style>	
+<div id="stage">
+	<div id="cute">
+		<div id="front"></div>
+		<div id="back"></div>
+		<div id="left"></div>
+		<div id="right"></div>
+		<div id="up"></div>
+		<div id="down"></div>
+	</div>
+</div>
+
+<script src="../src/util/tween.js"></script>
+<script src="http://g.tbcdn.cn/mtb/zepto/1.0.4/zepto.js"></script>
+<script type="text/javascript">
+
+(function(){
+
+	var cute = document.getElementById('cute');
+
+	window.ondeviceorientation = function(e){
+        var angleY = e.gamma,
+        	angleX = e.beta;
+// console.log(angleX);
+        cute.style.webkitTransform = ['translateZ(160px) ','rotateX(',angleX,'deg) rotateY(',angleY,'deg)'].join('');
+    }
+
+})();
+
+</script>
+
+</body>
+</html>
