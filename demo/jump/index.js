@@ -395,9 +395,9 @@ define(function(require, exports, module){
 					shape : Com.Shape.Rect,
 					painter : spriteSheetPainter,
 					loop : true,
-					autoPlay : true,
-					skewX : 10,
-					skewY : 30
+					autoPlay : true
+					// skewX : 10,
+					// skewY : 30
 				});
 
 				stage.append(sky);

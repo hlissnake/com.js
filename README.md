@@ -1,50 +1,57 @@
-#com.js
+# com.js
 ======
 
-A Simple Canvas Object Module (COM) Library. foucs on Canvas Virtual display Object, render, event handle.
-only support canvas2d graphic,not WebGL yet.
+A Virtual Display Object Library for html5 canvas basic graphic. Developers can manager their own graphic objects just like DOM in html, so I can it "Canvas Object Module (COM)". It is easy to build your html5 game or animation by Com.js.
 
-## com.js features
+Only supports canvas2d graphic currently, using global namespace to manager multiple modules.
 
-* provide virtual object managerment for canvas shape.
-* include sprite sheet, animation, html events delegate and listen, 
-* simple image assets loader, and a small time ticker object
+## Features
 
-# API
+* Provides `virtual object` managerment for canvas basic graphic shapes.
+* Implemented a `Vistual Event System` similar to DOM Event Model. Using `binary tree recursion algorithm` to find the target child which trigger the current event.
+* Including sprite sheet, animation, delegate events and assets loader,
+* `Debug` mode. add "_debug_" on your url search and Com.js will paint your object's border.
+
+## API
 ======
 
-## loader
-resource load. only include image
+* `Loader` : loading resources. only include image right now.
 
-## timer
-time ticker for game render loop
+* `Timer` : the ticker for game render loop. It is the core part of the game applications. run at 60 fps as default.
 
-## com object
-virtual canvas object. you can defines a shape object, set its properties,transform it, and render on canvas element
+* `Com` : Core Class in the library. It's the virtual object base class. you can defines it as a shape object, or extend it as a sprite object. 
 
-* config
-* properties
-* render
-* clear
-* on
-* delegate
+	* `Shape` implemention to render the outline shape such as Circle, Rectangle to your COM objects.
+	* `Painter` implemention to render the particular context, like Text, Bitmap. 
+	* `Transform` similar to CSS3 transform. support skew effect.
+	* `render` callback function before/after rendering on the canvas context.
+	* `clear` remove the object display form canvas context.
+	* `on` : pure event listener.
+	     * it will trigger only on the current com object, not include children targets in event object.
+		 * By doing this, it will aviod the findTarget external recursion to improve the performance
+	* `delegate` 
+		 * For html events only, not observer events.
+		 * Delegate the children coms event. include the target children com.
+				
+* `Sprite` : inherited form Com. Focus on playing sprite animation accroding to spritesheet
+	* play
+	* stop
 
-## sprite
-inherited form com, play sprite animation accroding to spritesheet
+* `SpriteSheet` : Define a spritesheet instance, and restore the sprite frames data
 
-* play
-* stop
+## Sample
 
-## spriteSheet
-define a spritesheet instance, and restore the sprite frames data
+* `Running Boy`. Can you survive beside the deadly arrows and rocks? [https://hlissnake.github.io](http://hlissnake.github.io/)
 
-## gesture
-use hammer.js to handle gesture event and custom gesture
-
-
-# sample
-
+* `Jumping Ball`. First product in real application environment. Be published in Laiwang Hybrid App. It is a funny game, very easy to control. Tilt your mobile device to move your ball: [http://h5.m.taobao.com/laiwang/game/jump/index.html](http://h5.m.taobao.com/laiwang/game/jump/index.html)
 
 ======
 
-have fun to create graphic in canvas world
+have fun to create fascinating graphics in web canvas world
+
+## Todo list
+
+* Support CommonJS module style and publish to npm, I suppose to build it by webpack.
+* Improve the tree recursion algorithm in the Event System.
+* WebGL for practice.
+* Describable UI Definition (like React JSX). Can be easy to build basic UI not animation or game.
